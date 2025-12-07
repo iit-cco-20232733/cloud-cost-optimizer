@@ -1,0 +1,17 @@
+{
+  "description": "Model feature configuration",
+  "feature_count": 6,
+  "features": [
+    "Network_In_Mbps",
+    "Network_Out_Mbps",
+    "Response_Time_ms",
+    "CPU_Utilization_Percent",
+    "Memory_Utilization_Percent",
+    "Disk_Usage_Percent"
+  ],
+  "lstm_config": {
+    "timesteps": 5,
+    "model_path": "models/lstm_model.h5",
+    "scaler_path": "models/scaler.pkl"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "description": "Application configuration",
+  "app": {
+    "name": "Cloud Instance Optimization",
+    "version": "1.0.0",
+    "debug": true,
+    "host": "127.0.0.1",
+    "port": 5000
+  },
+  "aws": {
+    "region": "eu-north-1",
+    "s3_bucket": "cloud-opt-poc",
+    "s3_dataset_key": "monthly_cloud.csv",
+    "credentials_file": "config/demo-user_accessKeys.csv"
+  },
+  "gemini": {
+    "api_key": "AIzaSyDPbeJPsY2EnvfhDSdSdx9rn73wbkoyhFQ",
+    "model_name": "gemini-flash-lite-latest"
+  },
+  "paths": {
+    "frontend": "frontend",
+    "templates": "templates",
+    "models": "models",
+    "dataset": "dataset",
+    "data": "data"
+  }
+}

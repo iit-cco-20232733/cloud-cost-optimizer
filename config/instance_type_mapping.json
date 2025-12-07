@@ -1,0 +1,21 @@
+{
+  "description": "LSTM Model Class to Instance Type Mapping",
+  "model_classes": 15,
+  "mapping": {
+    "0": "t2.nano",
+    "1": "t2.micro",
+    "2": "t2.small",
+    "3": "t2.medium",
+    "4": "t3.nano",
+    "5": "t3.micro",
+    "6": "m5.large",
+    "7": "m5.xlarge",
+    "8": "m5.2xlarge",
+    "9": "c5.large",
+    "10": "c5.xlarge",
+    "11": "c5.2xlarge",
+    "12": "r5.large",
+    "13": "r5.xlarge",
+    "14": "x1.large"
+  }
+}
