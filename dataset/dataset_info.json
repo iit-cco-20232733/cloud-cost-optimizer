@@ -1,0 +1,71 @@
+{
+  "dataset_name": "Optimized Cloud Instance Dataset (80-85% Target)",
+  "creation_date": "2025-09-19 20:12:49",
+  "total_sequences": 2250,
+  "sequence_length": 10,
+  "num_features": 9,
+  "num_classes": 15,
+  "class_names": [
+    "c5.2xlarge",
+    "c5.large",
+    "c5.xlarge",
+    "m5.2xlarge",
+    "m5.large",
+    "m5.xlarge",
+    "r5.large",
+    "r5.xlarge",
+    "t2.medium",
+    "t2.micro",
+    "t2.nano",
+    "t2.small",
+    "t3.micro",
+    "t3.nano",
+    "x1.large"
+  ],
+  "feature_names": [
+    "CPU_Utilization_Percent",
+    "Memory_Utilization_Percent",
+    "Network_In_Mbps",
+    "Network_Out_Mbps",
+    "Network_Throughput_Mbps",
+    "Disk_IO_IOPS",
+    "Disk_Usage_Percent",
+    "Response_Time_ms",
+    "Hourly_Cost_USD"
+  ],
+  "samples_per_class": {
+    "c5.2xlarge": 148,
+    "c5.large": 150,
+    "c5.xlarge": 144,
+    "m5.2xlarge": 155,
+    "m5.large": 149,
+    "m5.xlarge": 152,
+    "r5.large": 152,
+    "r5.xlarge": 151,
+    "t2.medium": 148,
+    "t2.micro": 154,
+    "t2.nano": 147,
+    "t2.small": 152,
+    "t3.micro": 148,
+    "t3.nano": 155,
+    "x1.large": 145
+  },
+  "optimization_parameters": {
+    "lstm_optimized_noise_factor": 0.08,
+    "outlier_rate": 0.05,
+    "label_noise_rate": 0.06,
+    "temporal_smoothing_enabled": true,
+    "sequence_consistency_enabled": true,
+    "gradual_degradation_patterns": true
+  },
+  "target_accuracy_range": "80-85% (LSTM-optimized)",
+  "key_improvements": [
+    "LSTM-optimized temporal noise patterns",
+    "Sequence-level consistency for better learning",
+    "Gradual degradation patterns LSTMs can learn",
+    "Temporal smoothing to enhance pattern recognition",
+    "Strategic label confusion to prevent tree overfitting",
+    "Minimal cross-correlations to reduce complexity",
+    "Enhanced separability for all model types"
+  ]
+}

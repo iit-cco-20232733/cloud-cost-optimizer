@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Instance Optimizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-8E18Zj6L6ujZVAE+uSsxVR6qLMBXqQ0LoyImVgeO5K9gI+ADG7nZRkoG0vcojCwl5CgDWSzrbn+Fz8H7kC2U9g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script defer src="/js/common.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+    <header class="bg-gradient-to-r from-green-500 via-green-600 to-emerald-700 shadow-xl">
+        <div class="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <p class="text-sm uppercase tracking-wide text-green-50/70">Cloud Intelligence Suite</p>
+                <h1 class="text-4xl md:text-5xl font-extrabold mt-2 text-white">Cloud Instance Optimizer</h1>
+                <p class="mt-3 text-green-50/90 max-w-2xl">Leverage your trained LSTM model and operational telemetry to right-size infrastructure, cut costs, and stay ahead of performance risks.</p>
+            </div>
+            <nav class="flex md:flex-col gap-3">
+                <a href="/" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition text-white font-semibold">
+                    <i class="fas fa-house"></i>
+                    Welcome
+                </a>
+                <a href="/predict" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition text-white">
+                    <i class="fas fa-magic"></i>
+                    Predict
+                </a>
+                <a href="/real-time" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition text-white">
+                    <i class="fas fa-chart-line"></i>
+                    Real-Time
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-1">
+        <section class="relative overflow-hidden bg-gradient-to-b from-green-50 to-gray-50">
+            <div class="max-w-7xl mx-auto px-6 py-16 relative z-10 grid lg:grid-cols-2 gap-12">
+                <div class="space-y-8">
+                    <div class="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+                        <h2 class="text-2xl font-semibold text-gray-900">Welcome to your control plane</h2>
+                        <p class="mt-3 text-gray-700">Use the navigation above to explore predictive capacity planning insights powered by your Flask backend.</p>
+                        <ul class="mt-6 space-y-4 text-sm text-gray-700">
+                            <li class="flex items-start gap-3">
+                                <span class="text-green-600 mt-0.5"><i class="fas fa-bolt"></i></span>
+                                <span><strong class="text-gray-900">Predict instance types</strong> with a guided input form that calls your `/api/test_single_prediction` endpoint.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-green-600 mt-0.5"><i class="fas fa-diagram-project"></i></span>
+                                <span><strong class="text-gray-900">Compare live workloads</strong> in the real-time view that leverages `/api/analyze_month` to surface provisioning decisions.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-green-600 mt-0.5"><i class="fas fa-cloud"></i></span>
+                                <span><strong class="text-gray-900">Provision with confidence</strong> thanks to side-by-side metrics and cost deltas for every recommended change.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="grid sm:grid-cols-3 gap-4">
+                        <div class="rounded-xl bg-white border border-gray-200 p-6 text-center shadow-sm">
+                            <p class="text-3xl font-bold text-green-600">7</p>
+                            <p class="mt-1 text-xs uppercase tracking-wider text-gray-600">Metrics tracked</p>
+                        </div>
+                        <div class="rounded-xl bg-white border border-gray-200 p-6 text-center shadow-sm">
+                            <p class="text-3xl font-bold text-green-600">14</p>
+                            <p class="mt-1 text-xs uppercase tracking-wider text-gray-600">Instance classes</p>
+                        </div>
+                        <div class="rounded-xl bg-white border border-gray-200 p-6 text-center shadow-sm">
+                            <p class="text-3xl font-bold text-green-600">∞</p>
+                            <p class="mt-1 text-xs uppercase tracking-wider text-gray-600">Optimization paths</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <div class="relative bg-white border border-gray-200 rounded-xl p-8 shadow-lg">
+                        <p class="text-xs uppercase tracking-wide text-gray-500">Next Actions</p>
+                        <h3 class="text-3xl font-semibold text-gray-900 mt-4">Choose your journey</h3>
+                        <div class="mt-8 space-y-4">
+                            <a href="/predict" class="flex items-center justify-between px-6 py-4 rounded-lg bg-green-50 hover:bg-green-100 transition border border-green-200">
+                                <div>
+                                    <p class="text-sm text-green-700 uppercase tracking-wider font-semibold">Step 1</p>
+                                    <p class="text-lg font-medium text-gray-900">Prediction Lab</p>
+                                </div>
+                                <i class="fas fa-arrow-right text-green-600"></i>
+                            </a>
+                            <a href="/real-time" class="flex items-center justify-between px-6 py-4 rounded-lg bg-blue-50 hover:bg-blue-100 transition border border-blue-200">
+                                <div>
+                                    <p class="text-sm text-blue-700 uppercase tracking-wider font-semibold">Step 2</p>
+                                    <p class="text-lg font-medium text-gray-900">Real-Time Command Center</p>
+                                </div>
+                                <i class="fas fa-arrow-right text-blue-600"></i>
+                            </a>
+                            <a href="https://tailwindcss.com/docs" target="_blank" class="flex items-center justify-between px-6 py-4 rounded-lg bg-gray-100 hover:bg-gray-200 transition border border-gray-200">
+                                <div>
+                                    <p class="text-sm text-gray-600 uppercase tracking-wider font-semibold">Need tweaks?</p>
+                                    <p class="text-lg font-medium text-gray-900">Tailwind utility reference</p>
+                                </div>
+                                <i class="fas fa-up-right-from-square text-gray-600"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-gray-200 bg-white">
+        <div class="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between gap-3 text-sm text-gray-600">
+            <p>© <span id="year"></span> Cloud Instance Optimizer. All rights reserved.</p>
+            <p class="flex items-center gap-2"><i class="fas fa-lock"></i> Data stays in your environment.</p>
+        </div>
+    </footer>
+</body>
+</html>

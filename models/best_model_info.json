@@ -1,0 +1,13 @@
+{
+  "best_model": "LSTM",
+  "test_accuracy": 0.7573398351669312,
+  "feature_columns": [
+    "CPU_Utilization_Percent",
+    "Memory_Utilization_Percent",
+    "Network_In_Mbps",
+    "Network_Out_Mbps",
+    "Disk_Usage_Percent",
+    "Response_Time_ms"
+  ],
+  "target_column": "Label_Encoded"
+}

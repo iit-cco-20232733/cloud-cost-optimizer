@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Instance Optimizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #06b6d4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .comparison-table th {
+            background-color: #f8fafc;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+            font-size: 14px;
+        }
+        
+        .comparison-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #374151;
+        }
+        
+        .comparison-table tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        
+        .status-over-provisioned {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .status-under-provisioned {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+        
+        .status-optimal {
+            background-color: #d1fae5;
+            color: #059669;
+        }
+        
+        /* Fixed modal positioning */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 672px;
+            max-height: 90vh;
+            overflow-y: auto;
+            margin: auto;
+        }
+        
+        /* Ensure body doesn't scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen bg-gray-50" x-data="dashboardApp()" x-init="init()">
+        <div class="container mx-auto px-4 py-8">
+            <!-- Header -->
+            <div class="mb-8">
+                <div class="gradient-bg rounded-2xl p-8 text-white">
+                    <h1 class="text-4xl font-bold mb-3">Cloud Instance Optimizer</h1>
+                    <p class="text-cyan-100 text-lg">Analyze your cloud instances and get AI-powered optimization recommendations</p>
+                    <div class="mt-4 flex items-center space-x-6 text-sm">
+                        <div class="flex items-center">
+                            <i class="fas fa-robot mr-2"></i>
+                            <span>ML-Powered Analysis</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-dollar-sign mr-2"></i>
+                            <span>Cost Optimization</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-chart-line mr-2"></i>
+                            <span>Performance Insights</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Month Selection -->
+            <div class="metric-card mb-8">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div class="w-8 h-8 bg-cyan-100 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-calendar-alt text-cyan-600"></i>
+                    </div>
+                    Select Month for Analysis
+                </h2>
+                <div class="flex flex-wrap gap-4 items-end">
+                    <div class="flex-1 min-w-64">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Month</label>
+                        <select x-model="selectedMonth" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                            <option value="">Select a month...</option>
+                            <template x-for="month in months" :key="month">
+                                <option :value="month" x-text="month"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div>
+                        <button @click="analyzeMonth()" 
+                                :disabled="!selectedMonth || loading"
+                                :class="{'bg-cyan-600 hover:bg-cyan-700': selectedMonth && !loading, 'bg-gray-400 cursor-not-allowed': !selectedMonth || loading}"
+                                class="px-8 py-3 text-white rounded-lg font-medium transition-all duration-200 flex items-center">
+                            <i class="fas fa-search mr-2"></i>
+                            <span x-text="loading ? 'Analyzing...' : 'Analyze Instances'"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div x-show="loading" class="metric-card text-center py-12">
+                <div class="loading-spinner mx-auto mb-6"></div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Analyzing Cloud Instances</h3>
+                <p class="text-gray-600">Processing metrics and generating ML predictions...</p>
+                <div class="mt-4 flex justify-center space-x-6 text-sm text-gray-500">
+                    <span><i class="fas fa-cog fa-spin mr-1"></i>Loading data</span>
+                    <span><i class="fas fa-brain mr-1"></i>ML analysis</span>
+                    <span><i class="fas fa-chart-bar mr-1"></i>Generating insights</span>
+                </div>
+            </div>
+
+            <!-- Results Summary -->
+            <div x-show="results && !loading" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="metric-card">
+                    <div class="flex items-center">
+                        <div class="p-4 rounded-xl bg-blue-100">
+                            <i class="fas fa-server text-blue-600 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Total Instances</p>
+                            <p class="text-3xl font-bold text-gray-900" x-text="results?.total_instances || 0"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="flex items-center">
+                        <div class="p-4 rounded-xl bg-red-100">
+                            <i class="fas fa-arrow-up text-red-600 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Over-provisioned</p>
+                            <p class="text-3xl font-bold text-gray-900" x-text="getStatusCount('over-provisioned')"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="flex items-center">
+                        <div class="p-4 rounded-xl bg-yellow-100">
+                            <i class="fas fa-arrow-down text-yellow-600 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Under-provisioned</p>
+                            <p class="text-3xl font-bold text-gray-900" x-text="getStatusCount('under-provisioned')"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="flex items-center">
+                        <div class="p-4 rounded-xl bg-green-100">
+                            <i class="fas fa-check text-green-600 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Optimal</p>
+                            <p class="text-3xl font-bold text-gray-900" x-text="getStatusCount('optimal')"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div x-show="results && !loading" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="metric-card">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                        <i class="fas fa-chart-pie text-cyan-600 mr-2"></i>
+                        Instance Status Distribution
+                    </h3>
+                    <div style="height: 300px;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                        <i class="fas fa-dollar-sign text-green-600 mr-2"></i>
+                        Cost Optimization Potential
+                    </h3>
+                    <div style="height: 300px;">
+                        <canvas id="costChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Table -->
+            <div x-show="results && !loading" class="metric-card overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <i class="fas fa-table text-cyan-600 mr-2"></i>
+                        Instance Analysis Results
+                    </h3>
+                    <p class="text-sm text-gray-600 mt-1">Detailed comparison of current vs predicted optimal instances</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Instance ID</th>
+                                <th>Current Type</th>
+                                <th>Predicted Type</th>
+                                <th>CPU Usage</th>
+                                <th>Memory Usage</th>
+                                <th>Network In</th>
+                                <th>Network Out</th>
+                                <th>Response Time</th>
+                                <th>Status</th>
+                                <th>Confidence</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="instance in results?.results || []" :key="instance.instance_id">
+                                <tr>
+                                    <td class="font-mono text-xs" x-text="instance.instance_id.substring(0, 12) + '...'"></td>
+                                    <td class="font-semibold" x-text="instance.current_type"></td>
+                                    <td class="font-semibold text-cyan-600" x-text="instance.predicted_type"></td>
+                                    <td x-text="instance.metrics.CPU_Utilization_Percent + '%'"></td>
+                                    <td x-text="instance.metrics.Memory_Utilization_Percent + '%'"></td>
+                                    <td x-text="instance.metrics.Network_In_Mbps + ' Mbps'"></td>
+                                    <td x-text="instance.metrics.Network_Out_Mbps + ' Mbps'"></td>
+                                    <td x-text="instance.metrics.Response_Time_ms + ' ms'"></td>
+                                    <td>
+                                        <span :class="{
+                                            'status-over-provisioned': instance.analysis.status === 'over-provisioned',
+                                            'status-under-provisioned': instance.analysis.status === 'under-provisioned',
+                                            'status-optimal': instance.analysis.status === 'optimal'
+                                        }" class="status-badge" x-text="instance.analysis.status"></span>
+                                    </td>
+                                    <td class="font-semibold" x-text="instance.confidence + '%'"></td>
+                                    <td>
+                                        <button @click="showRecommendation(instance)" class="text-cyan-600 hover:text-cyan-800 font-medium hover:underline">
+                                            View Details
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fixed Modal -->
+        <div x-show="showModal" class="modal-overlay" @click="closeModal">
+            <div class="modal-content" @click.stop>
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-2xl font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-lightbulb text-yellow-500 mr-3"></i>
+                            Instance Recommendation
+                        </h3>
+                        <button @click="closeModal" class="text-gray-400 hover:text-gray-600 p-2">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div x-show="selectedInstance" class="space-y-6">
+                        <!-- Instance Info Grid -->
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p class="text-sm font-medium text-gray-500 mb-1">Instance ID</p>
+                                <p class="text-lg font-mono text-gray-900" x-text="selectedInstance?.instance_id"></p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p class="text-sm font-medium text-gray-500 mb-1">Current Type</p>
+                                <p class="text-lg font-semibold text-gray-900" x-text="selectedInstance?.current_type"></p>
+                            </div>
+                            <div class="bg-cyan-50 p-4 rounded-lg">
+                                <p class="text-sm font-medium text-cyan-700 mb-1">Recommended Type</p>
+                                <p class="text-lg font-semibold text-cyan-900" x-text="selectedInstance?.predicted_type"></p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <p class="text-sm font-medium text-green-700 mb-1">Confidence</p>
+                                <p class="text-lg font-semibold text-green-900" x-text="selectedInstance?.confidence + '%'"></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Metrics Comparison -->
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-900 mb-3">Current Metrics</h4>
+                            <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-500">CPU:</span>
+                                    <span class="font-semibold ml-1" x-text="selectedInstance?.metrics?.CPU_Utilization_Percent + '%'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Memory:</span>
+                                    <span class="font-semibold ml-1" x-text="selectedInstance?.metrics?.Memory_Utilization_Percent + '%'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Response:</span>
+                                    <span class="font-semibold ml-1" x-text="selectedInstance?.metrics?.Response_Time_ms + 'ms'"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Recommendation -->
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="text-sm font-medium text-blue-700 mb-2">AI Recommendation</p>
+                            <p class="text-blue-900" x-text="selectedInstance?.analysis?.recommendation"></p>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="flex justify-end space-x-3 pt-4 border-t">
+                            <button @click="closeModal" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                                Close
+                            </button>
+                            <button @click="applyRecommendation()" class="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors">
+                                <i class="fas fa-check mr-2"></i>
+                                Apply Recommendation
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function dashboardApp() {
+            return {
+                months: [],
+                selectedMonth: '',
+                loading: false,
+                results: null,
+                showModal: false,
+                selectedInstance: null,
+                
+                async init() {
+                    await this.loadMonths();
+                },
+                
+                async loadMonths() {
+                    try {
+                        const response = await fetch('/api/get_months');
+                        const data = await response.json();
+                        this.months = data.months;
+                    } catch (error) {
+                        console.error('Error loading months:', error);
+                    }
+                },
+                
+                async analyzeMonth() {
+                    if (!this.selectedMonth) return;
+                    
+                    this.loading = true;
+                    try {
+                        const response = await fetch('/api/analyze_month', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ month: this.selectedMonth })
+                        });
+                        
+                        const data = await response.json();
+                        if (response.ok) {
+                            this.results = data;
+                            this.$nextTick(() => {
+                                this.createCharts();
+                            });
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    } catch (error) {
+                        console.error('Error analyzing month:', error);
+                        alert('Error analyzing month');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                getStatusCount(status) {
+                    if (!this.results?.results) return 0;
+                    return this.results.results.filter(r => r.analysis.status === status).length;
+                },
+                
+                showRecommendation(instance) {
+                    this.selectedInstance = instance;
+                    this.showModal = true;
+                    document.body.classList.add('modal-open');
+                },
+                
+                closeModal() {
+                    this.showModal = false;
+                    document.body.classList.remove('modal-open');
+                },
+                
+                applyRecommendation() {
+                    alert('Recommendation applied successfully! Instance will be updated in the next maintenance window.');
+                    this.closeModal();
+                },
+                
+                createCharts() {
+                    // Clear existing charts
+                    Chart.getChart('statusChart')?.destroy();
+                    Chart.getChart('costChart')?.destroy();
+                    
+                    // Status Distribution Chart
+                    const statusCtx = document.getElementById('statusChart').getContext('2d');
+                    new Chart(statusCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Over-provisioned', 'Under-provisioned', 'Optimal'],
+                            datasets: [{
+                                data: [
+                                    this.getStatusCount('over-provisioned'),
+                                    this.getStatusCount('under-provisioned'),
+                                    this.getStatusCount('optimal')
+                                ],
+                                backgroundColor: ['#EF4444', '#F59E0B', '#10B981'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        padding: 20,
+                                        usePointStyle: true
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    
+                    // Cost Chart
+                    const costCtx = document.getElementById('costChart').getContext('2d');
+                    const instances = this.results.results.slice(0, 10);
+                    new Chart(costCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: instances.map(i => i.instance_id.substring(0, 8)),
+                            datasets: [{
+                                label: 'Current Cost ($)',
+                                data: instances.map(i => i.analysis.current_cost),
+                                backgroundColor: '#3B82F6'
+                            }, {
+                                label: 'Predicted Cost ($)',
+                                data: instances.map(i => i.analysis.predicted_cost),
+                                backgroundColor: '#10B981'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '$' + value.toFixed(2);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>

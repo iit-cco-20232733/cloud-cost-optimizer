@@ -1,0 +1,39 @@
+{
+  "model_performance": {
+    "test_accuracy": 0.7416666746139526,
+    "test_loss": 0.8011956810951233,
+    "target_range": "79-82%",
+    "status": "OUTSIDE_TARGET"
+  },
+  "dataset_info": {
+    "total_samples": 1200,
+    "training_samples": 960,
+    "test_samples": 240,
+    "sequence_length": 10,
+    "num_features": 9,
+    "num_classes": 6,
+    "class_names": [
+      "c5.large",
+      "m5.large",
+      "t2.large",
+      "t2.medium",
+      "t2.micro",
+      "t2.small"
+    ]
+  },
+  "training_info": {
+    "epochs_trained": 50,
+    "batch_size": 32,
+    "optimizer": "Adam",
+    "learning_rate": 0.001
+  },
+  "files_saved": [
+    "cloud_instance_lstm_model.h5",
+    "scaler.pkl",
+    "label_encoder.pkl",
+    "feature_names.pkl",
+    "training_history.json",
+    "training_results_comprehensive.png",
+    "model_summary.json"
+  ]
+}

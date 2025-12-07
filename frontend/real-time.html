@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Optimization</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-8E18Zj6L6ujZVAE+uSsxVR6qLMBXqQ0LoyImVgeO5K9gI+ADG7nZRkoG0vcojCwl5CgDWSzrbn+Fz8H7kC2U9g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script defer src="/js/common.js"></script>
+    <script defer src="/js/realtime.js"></script>
+    <style>
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .modal-backdrop.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <a href="/" class="inline-flex items-center gap-3 text-green-600 hover:text-green-700 transition">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to welcome
+                </a>
+                <h1 class="text-3xl font-bold mt-3 md:mt-1 text-gray-900">Real-Time Command Center</h1>
+                <p class="text-gray-600 text-sm mt-1">Analyze monthly telemetry and optimize cloud instance provisioning</p>
+            </div>
+            <nav class="flex gap-3 text-sm">
+                <a href="/predict" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition text-gray-700">Predict</a>
+                <a href="/real-time" class="px-4 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition">Real-Time</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-1 bg-gray-50">
+        <section class="max-w-7xl mx-auto px-6 py-12 space-y-10" id="real-time-root">
+            <div class="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-900">Previous month snapshot</h2>
+                        <p class="mt-1 text-sm text-gray-600">Automatically pulls telemetry for the last completed calendar month</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs uppercase tracking-wide text-gray-500">Active window</p>
+                        <p class="text-xl font-semibold text-gray-900" id="active-month-label">Loading…</p>
+                    </div>
+                </div>
+                <p id="realtime-error" class="hidden mt-4 text-sm text-red-600"></p>
+            </div>
+
+            <div class="grid lg:grid-cols-4 gap-6" id="summary-cards" hidden>
+                <div class="rounded-xl bg-blue-50 border border-blue-200 p-6">
+                    <p class="text-xs uppercase tracking-wide text-blue-700">Instances</p>
+                    <p class="text-3xl font-semibold mt-2 text-blue-900" id="summary-total">0</p>
+                    <p class="text-sm text-blue-600 mt-2">Analyzed for selected month</p>
+                </div>
+                <div class="rounded-xl bg-green-50 border border-green-200 p-6">
+                    <p class="text-xs uppercase tracking-wide text-green-700">Optimal</p>
+                    <p class="text-3xl font-semibold mt-2 text-green-900" id="summary-optimal">0</p>
+                    <p class="text-sm text-green-600 mt-2">Already right-sized</p>
+                </div>
+                <div class="rounded-xl bg-amber-50 border border-amber-200 p-6">
+                    <p class="text-xs uppercase tracking-wide text-amber-700">Under</p>
+                    <p class="text-3xl font-semibold mt-2 text-amber-900" id="summary-under">0</p>
+                    <p class="text-sm text-amber-600 mt-2">Need scaling up</p>
+                </div>
+                <div class="rounded-xl bg-red-50 border border-red-200 p-6">
+                    <p class="text-xs uppercase tracking-wide text-red-700">Over</p>
+                    <p class="text-3xl font-semibold mt-2 text-red-900" id="summary-over">0</p>
+                    <p class="text-sm text-red-600 mt-2">Candidates for savings</p>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-xl p-8 space-y-6 hidden shadow-sm" id="results-card">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-900">Provisioning recommendations</h2>
+                        <p class="text-sm text-gray-600">Review and execute optimization recommendations</p>
+                    </div>
+                    <div class="text-sm text-green-700">
+                        Potential monthly savings: <span class="font-semibold text-green-800" id="summary-savings">$0.00</span>
+                    </div>
+                </div>
+
+                <!-- Search and Filter Controls -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <label class="text-sm text-gray-600 mb-2 block">Search Instance ID</label>
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="search-input" 
+                                placeholder="Search by instance ID..." 
+                                class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                            />
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="sm:w-64">
+                        <label class="text-sm text-gray-600 mb-2 block">Filter by Status</label>
+                        <select 
+                            id="status-filter" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        >
+                            <option value="all">All Statuses</option>
+                            <option value="optimal">Optimal</option>
+                            <option value="over-provisioned">Over-Provisioned</option>
+                            <option value="under-provisioned">Under-Provisioned</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm" id="results-table">
+                        <thead class="text-left text-gray-700 uppercase tracking-wide text-xs bg-gray-50">
+                            <tr class="border-b border-gray-200">
+                                <th class="py-3 pr-4 pl-4">Instance ID</th>
+                                <th class="py-3 pr-4">Current Type</th>
+                                <th class="py-3 pr-4">Recommended Type</th>
+                                <th class="py-3 pr-4">Status</th>
+                                <th class="py-3 pr-4">Monthly Savings</th>
+                                <th class="py-3 pr-4 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Comparison Modal -->
+        <div class="modal-backdrop" id="comparison-modal">
+            <div class="modal-content w-full max-w-5xl p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-900" id="modal-title">Instance Comparison</h3>
+                        <p class="text-sm text-gray-600 mt-1" id="modal-subtitle">Detailed metrics and recommendations</p>
+                    </div>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+
+                <div class="mb-6">
+                    <span class="px-3 py-1 rounded-full text-xs uppercase tracking-wide font-semibold" id="modal-status-badge"></span>
+                </div>
+
+                <!-- Specs Table -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Instance Specifications</h4>
+                    <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                        <table class="min-w-full text-sm" id="modal-spec-table">
+                            <thead class="text-left text-gray-700 uppercase tracking-wide text-xs bg-gray-50">
+                                <tr class="border-b border-gray-200">
+                                    <th class="py-3 pr-4 pl-4">Metric</th>
+                                    <th class="py-3 pr-4">Current</th>
+                                    <th class="py-3 pr-4">Recommended</th>
+                                    <th class="py-3 pr-4">Unit</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500" id="modal-spec-disclaimer"></p>
+                </div>
+
+                <!-- Insights -->
+                <div id="modal-insights">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">AI Recommendations</h4>
+                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4" id="modal-summary"></div>
+                    <ul class="space-y-2 text-sm text-gray-700 list-disc list-inside bg-green-50 border border-green-200 rounded-lg p-4" id="modal-recommendations"></ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="border-t border-gray-200 bg-white">
+        <div class="max-w-7xl mx-auto px-6 py-6 text-sm text-gray-600">
+            <p>Cloud Instance Optimization Platform</p>
+        </div>
+    </footer>
+</body>
+</html>

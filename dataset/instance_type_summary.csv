@@ -1,0 +1,17 @@
+Instance_Type,Series,Size,Sample_Count,Avg_CPU_Base,Avg_Memory_Base,Avg_Cost_Base,Performance_Category
+t2.nano,t2,nano,151,8,12,0.0058,Low
+t2.micro,t2,micro,142,15,20,0.0116,Low
+t2.small,t2,small,148,25,30,0.023,Low
+t2.medium,t2,medium,140,40,45,0.046,Low
+t2.large,t2,large,159,55,60,0.092,Medium
+t3.nano,t3,nano,136,10,15,0.0052,Low
+t3.micro,t3,micro,149,18,22,0.0104,Low
+m5.large,m5,large,152,70,75,0.096,Medium
+m5.xlarge,m5,xlarge,149,85,85,0.192,High
+m5.2xlarge,m5,2xlarge,150,92,90,0.384,High
+c5.large,c5,large,170,85,55,0.085,High
+c5.xlarge,c5,xlarge,153,92,65,0.17,High
+c5.2xlarge,c5,2xlarge,145,95,70,0.34,High
+r5.large,r5,large,154,65,85,0.126,Medium
+r5.xlarge,r5,xlarge,156,78,92,0.252,Medium
+x1.large,x1,large,146,75,95,0.334,Medium
